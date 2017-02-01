@@ -1,0 +1,41 @@
+/*
+ * Dominic Guri
+ * Joy Node in C++ 
+ * > Subscribe & Publish joy stick data from two joysticks
+ * > Use a boolean operator to switch between joysticks
+ * 
+ */
+
+#include "ros/ros.h"
+#include "sensor_msgs/Joy.h"
+
+void joy_cb(const sensor_msgs::Joy::ConstPtr &msg)
+{
+	// set array of joystick indices to be selected
+	int axesIdx[] = {1, 0, 2, 3};
+	int btnIdx[] = {12, 14, 15};
+	// select joystick axes and buttons
+	double ax[4];	// axis values from joystick
+	double bt[3];	// collect 2 buttons (takeoff, land, emergency)
+	// store joystick values of interest
+	for(int i = 0; i < 4; i++)
+	{
+		ax[i] = msg->axes[axesIdx[i]];
+		if(i < 3)
+		{
+			bt[i] = msg->buttons[btnIdx[i]];
+		}
+	}
+	// DEBUG: log to console
+	ROS_INFO("axes: %f, %f, %f, %f", ax[0],ax[1],ax[2],ax[3]);
+}
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "joy_combination");
+	ros::NodeHandle nh;
+	ros::Subscriber sub = nh.subscribe("joy", 1, joy_cb);
+
+	ros::spin();
+	return 0;
+}

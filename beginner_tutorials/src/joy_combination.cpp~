@@ -1,0 +1,58 @@
+/*
+ * Dominic Guri
+ * Joy Node in C++ 
+ * > Subscribe & Publish joy stick data from two joysticks
+ * > Use a boolean operator to switch between joysticks
+ */
+
+#include "ros/ros.h"
+#include "sensor_msgs/Joy.h"
+#include "std_msgs/Float32.h"
+#include "std_msgs/Int32.h"
+#include <vector>
+
+#include "JoystickCoop.h"
+
+// joystick instance for global stirage
+sensor_msgs::Joy dronejs;
+ros::Time msg_time;
+
+// -------------------------------------------------------------------
+void joy_cb(const sensor_msgs::Joy::ConstPtr &msg)
+{
+    dronejs = *msg;    
+
+	ROS_INFO("axes: %f, %f, %f, %f", 
+            dronejs.axes[0],
+            dronejs.axes[1],
+            dronejs.axes[2],
+            dronejs.axes[3]);
+}
+
+// -------------------------------------------------------------------
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "joy_combination");
+	ros::NodeHandle nh;
+	ros::Subscriber m_sub = nh.subscribe("/monitor/joy", 1, joy_cb);
+	ros::Subscriber s_sub = nh.subscribe("/subject/joy", 1, joy_cb);
+	ros::Publisher new_joy_pub = 
+	nh.advertise<sensor_msgs::Joy>("joy_node", 2);
+
+	dronejs.header.frame_id = "joy_node";
+
+	while (!new_joy_pub)
+	{
+		dronejs.header.stamp = msg_time;
+		new_joy_pub.publish(dronejs);
+
+		ros::spin();
+	}
+
+	return 0;
+}
+
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+
