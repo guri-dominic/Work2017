@@ -1,0 +1,9 @@
+<launch>
+    <node pkg="joy" type="joy_node" name="joy" ns="monitor">
+        <param name="dev" value="/dev/input/js0" />	
+    </node>
+
+    <!--
+    <node pkg="beginner_tutorials" type="joystickCombination" name="joy_router"/> 
+    -->
+</launch>
