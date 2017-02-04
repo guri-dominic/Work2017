@@ -2,8 +2,10 @@
 /*
  * Dominic Guri
  * Joy Node in C++ 
- * > Subscribe & Publish joy stick data from two joysticks
- * > Use a boolean operator to switch between joysticks
+ *      > Testing a simple C++ class for simulating a joystick pablish
+ *        by routing specific axes and buttons from an input joystick
+ *      > The input joystick is under the namespace '/monitor'
+ *      > The publisher name is '/joy_node'
  */
 
 #include "ros/ros.h"
