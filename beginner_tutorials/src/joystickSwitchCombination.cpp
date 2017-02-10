@@ -23,6 +23,7 @@ class JoystickCoop
         ros::NodeHandle nh;
 		ros::Subscriber mJoySub;
 		ros::Subscriber sJoySub;
+		ros::Subscriber controlSwitchSub;
 	    ros::Publisher joyPub;
                
         // Axes Indices (0:Yaw, 1:Lift, 2:Roll, 3:Pitch)
@@ -50,6 +51,8 @@ class JoystickCoop
                 const sensor_msgs::Joy::ConstPtr &msg);
 		void subjectJoystickCallback(
                 const sensor_msgs::Joy::ConstPtr &msg);
+		void disturbanceCallback(
+                const std_msgs::Bool::ConstPtr &msg);
 };
 // ----------------------------------------------------------------------
 JoystickCoop::JoystickCoop()
@@ -83,12 +86,34 @@ JoystickCoop::JoystickCoop()
             &JoystickCoop::subjectJoystickCallback,
             this);
 
+    //ros::Subscriber sJoySub;
+    sJoySub = nh.subscribe(
+            "/disturbance", 
+            2, 
+            &JoystickCoop::disturbanceCallback,
+            this);
+
     //ros::Publisher joyPub;
 	joyPub = nh.advertise<sensor_msgs::Joy>(
             "joy_node",
             1);
 }
 // -------------------------------------------------------------------
+void JoystickCoop::disturbanceCallback(
+                const std_msgs::Bool::ConstPtr &msg)
+{
+	// DEBUG: log to console
+    ROS_INFO("Disturbance: %s",
+            msg->data ? "true" : "false"); // print True/False
+
+    // TODO: Apply control switching
+    // - Use function pointer to an external algorithm that 
+    //   applies the TEST-ALGORITHM
+    // - FORM: func(int &monitorAxValue, int &alternativeAxValue)
+
+    // this->mAxIdx, this->sAxIdx, this->mBtIdx
+}
+
 void JoystickCoop::monitorJoystickCallback(
                 const sensor_msgs::Joy::ConstPtr &msg)
 {
