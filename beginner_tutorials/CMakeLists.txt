@@ -181,6 +181,13 @@ add_executable(joystickCombination src/joystickCombination.cpp )
 target_link_libraries(joystickCombination ${catkin_LIBRARIES})
 add_dependencies(joystickCombination joystickCombination_generate_messages_cpp)
 
+add_executable(twoJoysticksCombination src/twoJoysticksCombination.cpp )
+target_link_libraries(twoJoysticksCombination ${catkin_LIBRARIES})
+add_dependencies(twoJoysticksCombination twoJoysticksCombination_generate_messages_cpp)
+
+add_executable(singleJoystickRouter src/singleJoystickRouter.cpp )
+target_link_libraries(singleJoystickRouter ${catkin_LIBRARIES})
+add_dependencies(singleJoystickRouter singleJoystickRouter_generate_messages_cpp)
 ###########################################################
 #############
 ## Testing ##

@@ -85,7 +85,7 @@ JoystickCoop::JoystickCoop()
 
     //ros::Publisher joyPub;
 	joyPub = nh.advertise<sensor_msgs::Joy>(
-            "joy_node",
+            "/joy",
             1);
 }
 // -------------------------------------------------------------------

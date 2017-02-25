@@ -47,11 +47,7 @@ class JoystickCoop
         JoystickCoop(
                 std::vector<int> mAxIdx,
                 std::vector<int> sAxIdx,
-                std::vector<int> mBtIdx): 
-                    mAxIdx(mAxIdx),
-                    sAxIdx(sAxIdx),
-                    mBtIdx(mBtIdx){/* constructor */}
-
+                std::vector<int> mBtIdx); 
 
         // CALLBACK FUNCTIONS:
         // Two joystick callback functions
@@ -101,16 +97,16 @@ JoystickCoop::JoystickCoop()
             1);
 }
 // ------------------------
-// JoystickCoop::JoystickCoop(
-        // std::vector<int> mAxIdx,
-        // std::vector<int> sAxIdx,
-        // std::vector<int> mBtIdx):
-            // mAxIdx(mAxesIndices),
-            // sAxIdx(sAxesIndices),
-            // mBtIdx(mButtonIndices)
-// {
-    // constructor
-// }
+JoystickCoop::JoystickCoop(
+                std::vector<int> mAxIdx,
+                std::vector<int> sAxIdx,
+                std::vector<int> mBtIdx): 
+                    mAxIdx(mAxIdx),
+                    sAxIdx(sAxIdx),
+                    mBtIdx(mBtIdx)
+{
+    /* constructor */
+}
 
 // -------------------------------------------------------------------
 void JoystickCoop::monitorJoysticksCallback(
@@ -129,16 +125,16 @@ void JoystickCoop::monitorJoysticksCallback(
         this->dronejs.axes[i] = msg->axes[i];
     }
 	// DEBUG: log to console
-	// ROS_INFO("axes: %f, %f, %f, %f",
+    // ROS_INFO("axes: %f, %f, %f, %f",
             // this->dronejs.axes[0],
             // this->dronejs.axes[1],
             // this->dronejs.axes[2],
             // this->dronejs.axes[3]);
     // PUBLISH:
     //joyPub
-    //publish(this->dronejs);
+    joyPub.publish(this->dronejs);
 }
-
+// -----------------------------------------
 void JoystickCoop::subjectJoysticksCallback(
                 const sensor_msgs::Joy::ConstPtr &msg)
 {
@@ -149,13 +145,13 @@ void JoystickCoop::subjectJoysticksCallback(
         this->dronejs.axes[i] = msg->axes[i];
     }
 	// DEBUG: log to console
-	ROS_INFO("axes: %f, %f, %f, %f", 
-            this->dronejs.axes[0],
-            this->dronejs.axes[1],
-            this->dronejs.axes[2],
-            this->dronejs.axes[3]);
+	// ROS_INFO("axes: %f, %f, %f, %f",
+            // this->dronejs.axes[0],
+            // this->dronejs.axes[1],
+            // this->dronejs.axes[2],
+            // this->dronejs.axes[3]);
     // PUBLISH:
-    //joyPub.publish(this->dronejs);
+    joyPub.publish(this->dronejs);
 }
 
 // -------------------------------------------------------------------
@@ -213,6 +209,8 @@ void JoystickCoop::setInputChannels(std::vector<int> mAxIndices,
 /////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
+    // ROS Initilization & Running
+	ros::init(argc, argv, "joystickCombination");
     std::vector<int> mAxIndices;
     std::vector<int> sAxIndices;
     std::vector<int> mBtIndices;
@@ -231,8 +229,6 @@ int main(int argc, char **argv)
     mBtIndices.push_back(14);   // Land         [X]
     mBtIndices.push_back(15);   // Emergency    [square]
 
-    // ROS Initilization & Running
-	ros::init(argc, argv, "joystickCombination");
     // JoystickCoop joyCollaboration;
     JoystickCoop joyCollaboration(
             mAxIndices,
