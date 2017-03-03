@@ -115,7 +115,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS} include
+    include
+    ${catkin_INCLUDE_DIRS} 
 )
 
 ## Declare a C++ library
@@ -127,18 +128,6 @@ include_directories(
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(beginner_tutorials ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-# add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(beginner_tutorials_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(beginner_tutorials_node
-#   ${catkin_LIBRARIES}
-# )
 
 #############
 ## Install ##
@@ -154,20 +143,6 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark executables and/or libraries for installation
-# install(TARGETS beginner_tutorials beginner_tutorials_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
-
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1
@@ -176,7 +151,6 @@ include_directories(
 # )
 
 ###########################################################
-
 add_executable(joystickCombination src/joystickCombination.cpp )
 target_link_libraries(joystickCombination ${catkin_LIBRARIES})
 add_dependencies(joystickCombination joystickCombination_generate_messages_cpp)
@@ -188,6 +162,37 @@ add_dependencies(twoJoysticksCombination twoJoysticksCombination_generate_messag
 add_executable(singleJoystickRouter src/singleJoystickRouter.cpp )
 target_link_libraries(singleJoystickRouter ${catkin_LIBRARIES})
 add_dependencies(singleJoystickRouter singleJoystickRouter_generate_messages_cpp)
+
+# Executable Settings #
+add_executable(
+    joystick_switching 
+    src/joystick_src/joystick_combination.cpp
+    src/joystick_switching.cpp
+)
+target_link_libraries(
+    joystick_switching 
+    ${catkin_LIBRARIES}
+)
+add_dependencies(
+    joystick_switching 
+    joystick_switching_generate_messages_cpp
+)
+# joystick_switching_gencfg
+
+## Mark executables and/or libraries for installation
+# install(TARGETS beginner_tutorials beginner_tutorials_node
+  # ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  # LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  # RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+  # DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  # FILES_MATCHING PATTERN "*.h"
+  # PATTERN ".svn" EXCLUDE
+# )
+
 ###########################################################
 #############
 ## Testing ##

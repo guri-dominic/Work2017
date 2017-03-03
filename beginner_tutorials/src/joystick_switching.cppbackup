@@ -13,7 +13,8 @@
 #include "std_msgs/Float32.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/Bool.h"
-//#include <vector>
+#include <vector>
+#include <algorithm>
 
 // ----------------------------------------------------------------------
 class JoystickCoop
@@ -23,6 +24,7 @@ class JoystickCoop
         ros::NodeHandle nh;
 		ros::Subscriber mJoySub;
 		ros::Subscriber sJoySub;
+		ros::Subscriber controlSwitchSub;
 	    ros::Publisher joyPub;
                
         // Axes Indices (0:Yaw, 1:Lift, 2:Roll, 3:Pitch)
@@ -39,6 +41,13 @@ class JoystickCoop
         // TODO: change from (void) input to (ros::Time &)
         // publishCombination(ros::Time &t)
         void publishCombination(void);
+        // Joystick Axes swapping - based on boolean input
+        void clearIndex(std::vector<int> &vec, int val);
+        void setIndex(std::vector<int> &vec, int val);
+        void swapIndex(std::vector<int> &vStart, 
+                    std::vector<int> &vEnd,
+                    int val);
+
 
 	public:
         // CONSTRUCTOR:
@@ -50,7 +59,41 @@ class JoystickCoop
                 const sensor_msgs::Joy::ConstPtr &msg);
 		void subjectJoystickCallback(
                 const sensor_msgs::Joy::ConstPtr &msg);
+		void disturbanceCallback(
+                const std_msgs::Bool::ConstPtr &msg);
 };
+
+// ----------------------------------------------------------------------
+// TODO: Create an independent class of axes swapping utilities
+void JoystickCoop::clearIndex(std::vector<int> &vec, int val)
+{
+    //check val is in vec
+    //clear if present
+    vec.erase(
+            std::remove(
+                vec.begin(), 
+                vec.end(), 
+                val
+                ), 
+            vec.end());
+}
+
+void JoystickCoop::setIndex(std::vector<int> &vec, int val)
+{
+    //check val is in vec
+    // if not, set the value
+    clearIndex(vec, val);
+    vec.push_back(val);
+}
+
+void JoystickCoop::swapIndex(std::vector<int> &vStart, 
+                    std::vector<int> &vEnd,
+                    int val)
+{
+    //
+    clearIndex(vStart, val);
+    setIndex(vEnd, val);
+}
 // ----------------------------------------------------------------------
 JoystickCoop::JoystickCoop()
 {
@@ -72,23 +115,66 @@ JoystickCoop::JoystickCoop()
     //ros::Subscriber mJoySub;
     mJoySub = nh.subscribe(
             "/monitor/joy", 
-            2, 
+            1, 
             &JoystickCoop::monitorJoystickCallback,
             this);
 
     //ros::Subscriber sJoySub;
     sJoySub = nh.subscribe(
             "/subject/joy", 
-            2, 
+            1, 
             &JoystickCoop::subjectJoystickCallback,
+            this);
+
+    //ros::Subscriber controlSwitchSub;
+    controlSwitchSub = nh.subscribe(
+            "/disturbance", 
+            1, 
+            &JoystickCoop::disturbanceCallback,
             this);
 
     //ros::Publisher joyPub;
 	joyPub = nh.advertise<sensor_msgs::Joy>(
-            "/joy",
+            "joy",
             1);
 }
 // -------------------------------------------------------------------
+void JoystickCoop::disturbanceCallback(
+                const std_msgs::Bool::ConstPtr &msg)
+{
+	// DEBUG: log to console
+    ROS_INFO("Disturbance: %s",
+            msg->data ? "true" : "false"); // print True/False
+
+    // TODO: Apply control switching
+    // - Use function pointer to an external algorithm that 
+    //   applies the TEST-ALGORITHM
+    // - FORM: func(int &monitorAxValue, int &alternativeAxValue)
+    // remove element of value equal to pitchIdx
+
+    // Axes Indices (0:Yaw, 1:Lift, 2:Roll, 3:Pitch)
+    // Button Indices (0:Takeoff, 1:Land, 2:Emergency)
+    int pitchIdx = 3;
+    // https://cse.sc.edu/~jokane/agitr/agitr-small-param.pdf
+    // Section 7.3
+    // void ros::param::set("param_name", value)
+    // with declared value_container
+    // bool ros::param::get("param_name", value_container)
+    if(msg->data)
+    {
+        // if there's a distubance, the monitor takes over
+        // swap from mAxIdx to sAxIdx
+        this->swapIndex(this->mAxIdx, this->sAxIdx, pitchIdx);
+        // ros::param::set("/joystick_controller/ScalePitch",-1);
+    }
+    else
+    {
+        // from sAxIdx to mAxIdx
+        this->swapIndex(this->sAxIdx, this->mAxIdx, pitchIdx);
+        // ros::param::set("/joystick_controller/ScalePitch",1);
+    }
+}
+
 void JoystickCoop::monitorJoystickCallback(
                 const sensor_msgs::Joy::ConstPtr &msg)
 {
@@ -122,12 +208,13 @@ void JoystickCoop::subjectJoystickCallback(
     for(int i = 0; i < this->sAxIdx.size(); i++)
     {
         // multiply by -1 to reverse joystick axes (to match master sign)
-        this->dronejs.axes[this->sAxIdx[i]] = msg->axes[this->sAxIdx[i]];
+        this->dronejs.axes[this->sAxIdx[i]] = -1.0*msg->axes[this->sAxIdx[i]];
     }
 
     // TODO: Remove Time update, and pass as variable to 
     // publishCombination(ros::Time &t)
     // Update time
+    this->dronejs.header.stamp = msg->header.stamp;
     this->publishCombination();
 }
 
@@ -135,17 +222,17 @@ void JoystickCoop::subjectJoystickCallback(
 void JoystickCoop::publishCombination(void)
 {
 	// DEBUG: log to console
-    ROS_INFO("axes(s): %f, %f, %f, %f",
-            this->dronejs.axes[0],
-            this->dronejs.axes[1],
-            this->dronejs.axes[2],
-            this->dronejs.axes[3]);
-    ROS_INFO("buttons(s): %d, %d, %d",
-            this->dronejs.buttons[0],
-            this->dronejs.buttons[1],
-            this->dronejs.buttons[2]);
-    ROS_INFO("sAxIdx.size(): %ld",
-            this->sAxIdx.size());
+    // ROS_INFO("axes(s): %f, %f, %f, %f",
+            // this->dronejs.axes[0],
+            // this->dronejs.axes[1],
+            // this->dronejs.axes[2],
+            // this->dronejs.axes[3]);
+    // ROS_INFO("buttons(s): %d, %d, %d",
+            // this->dronejs.buttons[0],
+            // this->dronejs.buttons[1],
+            // this->dronejs.buttons[2]);
+    // ROS_INFO("sAxIdx.size(): %ld",
+            // this->sAxIdx.size());
     // PUBLISH:
     // TODO: populate Time before publishing
     // this->dronejs.header.stamp = msg->header.stamp;

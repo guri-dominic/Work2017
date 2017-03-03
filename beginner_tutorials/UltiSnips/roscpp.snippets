@@ -1,0 +1,17 @@
+
+snippet ;cgd
+#ifndef ${1:CLASS_GUARD_H}
+#define $1
+
+$0
+
+#endif // $1
+
+endsnippet
+
+snippet ;gd "An entire .h generator" b
+#ifndef ${2:`!v substitute(vim_snippets#Filename('$1_H','ClassName'),'.*','\U&\E','')`}
+#define $2
+$0
+#endif /* $2 */
+endsnippet
